@@ -4,7 +4,7 @@ import { Global } from "@emotion/react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // Import your pages
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard";
 import Planning from "./pages/Planning";
 import Invoice from "./pages/Invoice";
 import Account from "./pages/Account";
@@ -18,7 +18,7 @@ export const routes = {
   ACCOUNT: "/account",
 };
 
-function App() {
+const App = () => {
   return (
     <>
       <Global
@@ -42,6 +42,6 @@ function App() {
       </div>
     </>
   );
-}
+};
 
 export default App;
