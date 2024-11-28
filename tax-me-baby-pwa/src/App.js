@@ -1,25 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+// import { ThemeProvider } from "@mui/material";
+import { Global } from "@emotion/react";
+import { Routes, Route, Navigate } from "react-router-dom";
+
+// Import your pages
+import Dashboard from "./pages/Dashboard";
+import Planning from "./pages/Planning";
+import Invoice from "./pages/Invoice";
+import Account from "./pages/Account";
+
+// Define your routes
+export const routes = {
+  ROOT: "/",
+  DASHBOARD: "/dashboard",
+  PLANNING: "/planning",
+  INVOICE: "/invoice",
+  ACCOUNT: "/account",
+};
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Global
+        styles={{
+          ".center": {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
+      />
+      <div className="App">
+        <Routes>
+          <Route path={routes.ROOT} element={<Navigate to={routes.DASHBOARD} replace />} />
+          <Route path={routes.DASHBOARD} element={<Dashboard />} />
+          <Route path={routes.PLANNING} element={<Planning />} />
+          <Route path={routes.INVOICE} element={<Invoice />} />
+          <Route path={routes.ACCOUNT} element={<Account />} />
+          <Route path="*" element={<Navigate to={routes.DASHBOARD} replace />} />
+        </Routes>
+      </div>
+    </>
   );
 }
 
