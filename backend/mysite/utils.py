@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from django.db import transaction
 
-from .models import Invoice, TransactionItem, TaxReliefSubcategory
+from .models import Invoice, TransactionItem, TaxReliefSubcategory, UserTransaction
 
 
 load_dotenv()
@@ -51,29 +51,31 @@ def identify_tax_relief_categories(items):
     except Exception as e:
         return f"Error: {e}"
 
-@transaction.atomic
-def categorize_transaction_items():
-    uncategorized_items = TransactionItem.objects.filter(tax_relief_subcategory__isnull=True)
-    
-    item_descriptions = [{"id": item.id, "description": item.item_description} for item in uncategorized_items]
-    print(item_descriptions)
-    response = identify_tax_relief_categories([desc["description"] for desc in item_descriptions])
-    print(response)
+def categorize_created_items(items):
+    try:
+        item_descriptions = [{"id": item.id, "description": item.item_description} for item in items]
+        descriptions = [desc["description"] for desc in item_descriptions]
 
-    for item in uncategorized_items:
-        category_name = None
-        for entry in response:
-            if entry["item"] == item.item_description:
-                category_name = entry["category"]
-                break
+        response = identify_tax_relief_categories(descriptions)
+        print(response)
+        for item in items:
+            category_name = None
+            for entry in response:
+                if entry["item"] == item.item_description:
+                    category_name = entry["category"]
+                    break
 
-        if category_name:
-            if category_name == "Additional lifestyle expenses for sports activities (including bowling ball)":
-                category_name = "lifestyle_sports"
-            subcategory = TaxReliefSubcategory.objects.filter(category=category_name).first()
-            if subcategory:
-                item.tax_relief_subcategory = subcategory
-                item.save()
+            if category_name:
+                if category_name == "Additional lifestyle expenses for sports activities (including bowling ball)":
+                    category_name = "lifestyle_sports"
+
+                subcategory = TaxReliefSubcategory.objects.filter(category=category_name).first()
+                if subcategory:
+                    item.tax_relief_subcategory = subcategory
+                    item.save()
+
+    except Exception as e:
+        print(f"Error during categorization: {e}")
 
 @transaction.atomic
 def perform_ocr(invoice_id, file_path):
@@ -115,17 +117,23 @@ def perform_ocr(invoice_id, file_path):
         #         "total_price": "RM85.00"
         #     }
         # ]
+        created_items = []
         for item_details in extracted_response_json:
             item = item_details.get("item", "")
             total_price = float(item_details.get("total_price", "0.0"))
 
-            TransactionItem.objects.create(
+            created_item=TransactionItem.objects.create(
+                transaction = UserTransaction.objects.filter(transaction_id=invoice_id).order_by('-transaction_id').first(),
                 invoice = Invoice.objects.filter(id=invoice_id).first(),
                 item_description = item,
                 amount_including_tax = total_price,
             )
+            created_items.append(created_item)
 
-        return extracted_response_json
+        # Step 4: Categorize the created items
+        categorize_created_items(created_items)
+
+        return {"message": "Items have been successfully processed and categorized.", "items": extracted_response_json}
 
     except json.JSONDecodeError:
         return extracted_response
