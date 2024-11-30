@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan, Invoice
-from .utils import categorize_transaction_items, perform_ocr
+from .utils import categorize_transaction_items, perform_ocr, query_gpt_for_planning_analysis
 
 
 def list_tax_relief_cat(request):
@@ -186,6 +186,7 @@ def list_labeled_transaction(request):
     ]
     return JsonResponse({"labeled_transactions": data}, safe=False)
 
+
 def list_unlabeled_transaction(request):
     """
     Fetch and return all transactions where `is_deductable` is False.
@@ -205,3 +206,40 @@ def list_unlabeled_transaction(request):
         for transaction in unlabeled_transactions
     ]
     return JsonResponse({"unlabeled_transactions": data}, safe=False)
+
+
+def analyse_user_plans(request):
+    try:
+        tax_relief_subcategories = TaxReliefSubcategory.objects.filter(current_amount__gt=0)
+        plans = Plan.objects.all()
+
+        query = """You are now a financial planner that specialises in tax. Your role is to help customers maximise the tax relief offered by the government in order for the customer to pay as least amount of tax as possible. The following information about the Malaysian tax relief as well as its maximum amount of claims are as follows:
+        1. Education Fee for Self: 7000
+        2. Medical Expenses for Self, Spouse or Children: 10000
+        3. Medical Expenses for Parent: 8000
+        4. Life Insurance: 3000
+        5. Education & Medical Insurance: 3000
+        6. Private Retirement Scheme (PRS): 3000
+        7. Lifestyle (Reading Materials, Electronics, Internet, etc.: 2500
+        8. Lifestyle - Additional Relief for Sports Activity: 500
+        9. Electric Vehicle Charging Facilities: 2500
+
+        This particular user has only utilise the following certain tax relief to a certain extent, as detailed below:
+        """
+
+        for idx in range(len(tax_relief_subcategories)):
+            subcategory = tax_relief_subcategories[idx]
+            query += f"{idx+1}. {subcategory.get_category_display()}: {subcategory.current_amount}\n"
+
+        query += "\nGiven that the following user plans to make the following purchases now, recommend steps for the user to maximise tax relief. If the users have already fully utilise certain tax relief categories, recommend the user to make the purchase next year. Additionally, give recommendations for tax relief categories that the users have not utilise. Bear in mind that this user is a fresh graduate, and earns a monthly salary of 4500 in Malaysia.\n"
+
+        for idx in range(len(plans)):
+            plan = plans[idx]
+            query += f"{idx+1}. {plan.title} which costs {plan.price}\n"
+
+        query += "\nGive your response in JSON format. The JSON output should have 2 keys: ‘planned_purchases’ and ‘additional recommendations’. Each of the planned_purchases should have ‘item’, ‘cost’, ‘action’ and ‘comment’ as keys. Each of the additional_recommendations should have ‘category’, ‘action’ and ‘comment’ as keys."
+        response = query_gpt_for_planning_analysis(query)
+
+        return JsonResponse({"message": "Items have been successfully extracted from invoices.", "response": response}, status=200)
+    except Exception as e:
+        return JsonResponse({"error": f"Enountered error. {e=}"}, status=500)

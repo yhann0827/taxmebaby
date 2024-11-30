@@ -10,5 +10,6 @@ urlpatterns = [
     path('transactions/unlabeled/', views.list_unlabeled_transaction, name='list_unlabeled_transaction'),
     path('plans/', views.get_plans, name='get_plans'),
     path('create-plan/', views.create_plan, name='create_plan'),
-    path('create_items_from_invoice/', views.create_items_from_invoice, name='create_items_from_invoice')
+    path('create_items_from_invoice/', views.create_items_from_invoice, name='create_items_from_invoice'),
+    path('analyse_user_plans/', views.analyse_user_plans, name='analyse_user_plans')
 ]

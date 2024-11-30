@@ -71,3 +71,26 @@ def perform_ocr(invoice_id, file_path):
         return extracted_response
     except Exception as e:
         return f"Error: {e}"
+
+
+def query_gpt_for_planning_analysis(query):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4",
+            messages = [
+                {"role": "system", "content": "You are now a financial planner that specialises in tax."},
+                {"role": "user", "content": query},
+            ]
+        )
+
+        extracted_response = response.choices[0].message.content
+        extracted_response_json = json.loads(extracted_response)
+        return extracted_response_json
+
+    except json.JSONDecodeError:
+        return extracted_response
+    except Exception as e:
+        return f"Error: {e}"
+
