@@ -50,6 +50,7 @@ class UserTransaction(models.Model):
     amount_including_tax = models.DecimalField(max_digits=12, decimal_places=2)
 
     transaction_type = models.CharField(max_length=6, choices=TRANSACTION_TYPE_CHOICES)
+    is_deductable = models.BooleanField(default=False)
 
     def __str__(self):
         return self.transaction_id

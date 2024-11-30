@@ -165,3 +165,44 @@ def create_items_from_invoice(request):
         return JsonResponse({"message": "Items have been successfully extracted from invoices.", "response": extracted_response_json}, status=200)
     else:
         return JsonResponse({"error": "Invalid request method."}, status=405)
+
+
+def list_labeled_transaction(request):
+    """
+    Fetch and return all transactions where `is_deductable` is True.
+    """
+    labeled_transactions = UserTransaction.objects.filter(is_deductable=True)
+    data = [
+        {
+            "transaction_id": transaction.transaction_id,
+            "source": transaction.source,
+            "account": transaction.account,
+            "date": transaction.date,
+            "transaction_description": transaction.transaction_description,
+            "transaction_remarks": transaction.transaction_remarks,
+            "amount_including_tax": float(transaction.amount_including_tax),
+            "transaction_type": transaction.transaction_type,
+        }
+        for transaction in labeled_transactions
+    ]
+    return JsonResponse({"labeled_transactions": data}, safe=False)
+
+def list_unlabeled_transaction(request):
+    """
+    Fetch and return all transactions where `is_deductable` is False.
+    """
+    unlabeled_transactions = UserTransaction.objects.filter(is_deductable=False)
+    data = [
+        {
+            "transaction_id": transaction.transaction_id,
+            "source": transaction.source,
+            "account": transaction.account,
+            "date": transaction.date,
+            "transaction_description": transaction.transaction_description,
+            "transaction_remarks": transaction.transaction_remarks,
+            "amount_including_tax": float(transaction.amount_including_tax),
+            "transaction_type": transaction.transaction_type,
+        }
+        for transaction in unlabeled_transactions
+    ]
+    return JsonResponse({"unlabeled_transactions": data}, safe=False)
