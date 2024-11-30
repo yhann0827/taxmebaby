@@ -55,28 +55,20 @@ class UserTransaction(models.Model):
         return self.transaction_id
 
 
-class EInvoice(models.Model):
-    file_path = models.FileField(upload_to='e_invoices/')
-
-
-class UploadedInvoice(models.Model):
-    file_path = models.FileField(upload_to='uploaded_invoices/')
+class Invoice(models.Model):
+    file_path = models.FileField(upload_to='invoices/')
+    user_transaction = models.ForeignKey(
+        UserTransaction,
+        on_delete=models.CASCADE,
+    )
+    is_e_invoice = models.BooleanField()
 
 
 class TransactionItem(models.Model):
-    e_invoice_reference_number = models.ForeignKey(
-        EInvoice,
+    invoice = models.ForeignKey(
+        Invoice,
         on_delete=models.CASCADE,
         null=True, blank=True
-    )
-    upload_document_reference_number = models.ForeignKey(
-        UploadedInvoice,
-        on_delete=models.CASCADE,
-        null=True, blank=True
-    )
-    transaction = models.ForeignKey(
-        UserTransaction,
-        on_delete=models.CASCADE
     )
     item_description = models.TextField()
     amount_including_tax = models.DecimalField(max_digits=12, decimal_places=2)

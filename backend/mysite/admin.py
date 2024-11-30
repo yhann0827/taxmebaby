@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, EInvoice, UploadedInvoice, Plan
+from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan, Invoice
 
 @admin.register(TaxReliefSubcategory)
 class TaxReliefSubcategoryAdmin(admin.ModelAdmin):
@@ -13,15 +13,11 @@ class UserTransactionAdmin(admin.ModelAdmin):
 class TransactionItemAdmin(admin.ModelAdmin):
     pass
 
-@admin.register(EInvoice)
-class EInvoiceAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(UploadedInvoice)
-class UploadedInvoiceAdmin(admin.ModelAdmin):
-    pass
-
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
     pass

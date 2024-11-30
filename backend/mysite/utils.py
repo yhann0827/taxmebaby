@@ -39,6 +39,8 @@ def perform_ocr(file_path):
         extracted_response_json = json.loads(extracted_response)
         return extracted_response_json
 
+        # save to db
+
     except json.JSONDecodeError:
         return extracted_response
     except Exception as e:

@@ -4,7 +4,7 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan, EInvoice, UploadedInvoice
+from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan
 from .utils import categorize_transaction_items, perform_ocr
 
 
@@ -63,7 +63,7 @@ def analyze_item(request):
 
 
 def get_transaction_items(request):
-    transaction_items = TransactionItem.objects.select_related('transaction').all()
+    transaction_items = TransactionItem.objects.all()
 
     transaction_items_data = []
     for item in transaction_items:
@@ -72,8 +72,8 @@ def get_transaction_items(request):
             "amount_including_tax": str(item.amount_including_tax),
             "tax_relief_subcategory": item.tax_relief_subcategory.category if item.tax_relief_subcategory else None,
             "transaction": {
-                "transaction_id": item.transaction.transaction_id,
-                "transaction_date": item.transaction.date.strftime('%Y-%m-%d'),  # Format the date to string
+                "transaction_id": item.invoice.user_transaction.transaction_id,
+                "transaction_date": item.invoice.user_transaction.date.strftime('%Y-%m-%d'),  # Format the date to string
             }
         }
 
@@ -149,6 +149,8 @@ def get_plans(request):
 def extract_items_from_invoice(request):
     if request.method == "POST":
         data = json.loads(request.body)
+
+        transaction_id = data.get('transaction_id')
         file_type = data.get('file_type')
         file_id = data.get('file_id')
 
