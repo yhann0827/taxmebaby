@@ -49,11 +49,9 @@ def list_user_transactions(request):
     # Return the data as JSON
     return JsonResponse(data, safe=False)
 
-
 @csrf_exempt
 def analyze_item(request):
     if request.method == "POST":
-        # Call the function to categorize transaction items
         categorize_transaction_items()
         # Return a success response
         return JsonResponse({"message": "Transaction items categorization process started."}, status=200)
@@ -141,9 +139,10 @@ def get_plans(request):
 
     plans_data = []
     for plan in plans:
+        category = plan.get_category_display()
         plan_data = {
             "title": plan.title,
-            "category": plan.category,
+            "category": category,
             "price": plan.price,
             "date": plan.date
         }
