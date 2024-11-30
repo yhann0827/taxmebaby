@@ -84,7 +84,7 @@ def get_transaction_items(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def create_plans(request):
+def create_plan(request):
     try:
         # extract the required fields
         data = json.loads(request.body)
@@ -146,28 +146,14 @@ def get_plans(request):
 
 
 @csrf_exempt
-def extract_items_from_invoice(request):
+def create_items_from_invoice(request):
     if request.method == "POST":
         data = json.loads(request.body)
         invoice_id = data.get('invoice_id')
         file_path = Invoice.objects.filter(id=invoice_id).first().file_path
-        response = perform_ocr(file_path)
 
-        # {
-        #     "message": "Items have been successfully extracted from invoices.",
-        #     "response": [
-        #         {
-        #             "item": "Bowling Ball",
-        #             "price_per_unit": "RM400.00",
-        #             "total_price": "RM400.00"
-        #         },
-        #         {
-        #             "item": "Red Cow Energy Drink",
-        #             "price_per_unit": "RM42.50",
-        #             "total_price": "RM85.00"
-        #         }
-        #     ]
-        # }
-        return JsonResponse({"message": "Items have been successfully extracted from invoices.", "response": response}, status=200)
+        extracted_response_json = perform_ocr(invoice_id, file_path)
+
+        return JsonResponse({"message": "Items have been successfully extracted from invoices.", "response": extracted_response_json}, status=200)
     else:
         return JsonResponse({"error": "Invalid request method."}, status=405)
