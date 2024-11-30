@@ -265,9 +265,9 @@ class UploadPDFView(APIView):
                     is_e_invoice=True,
                 )
 
-            # invoice_id = invoice.id
-            # file_path = invoice.file_path
-            # perform_ocr(invoice_id, file_path)
+            invoice_id = invoice.id
+            file_path = invoice.file_path
+            perform_ocr(invoice_id, file_path)
 
             return JsonResponse({"success": True}, status=200)
 
