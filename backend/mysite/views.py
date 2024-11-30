@@ -4,7 +4,7 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan
+from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan, Invoice
 from .utils import categorize_transaction_items, perform_ocr
 
 
@@ -149,16 +149,8 @@ def get_plans(request):
 def extract_items_from_invoice(request):
     if request.method == "POST":
         data = json.loads(request.body)
-
-        transaction_id = data.get('transaction_id')
-        file_type = data.get('file_type')
-        file_id = data.get('file_id')
-
-        if file_type == "e_invoice":
-            file_path = EInvoice.objects.filter(id=file_id).first().file_path
-        elif file_type == "uploaded_invoice":
-            file_path = UploadedInvoice.objects.filter(id=file_id).first().file_path
-
+        invoice_id = data.get('invoice_id')
+        file_path = Invoice.objects.filter(id=invoice_id).first().file_path
         response = perform_ocr(file_path)
 
         # {
