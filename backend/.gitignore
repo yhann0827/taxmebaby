@@ -320,4 +320,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+backend/myvenv/
+
 # End of https://www.toptal.com/developers/gitignore/api/python,django,windows,macos
