@@ -6,6 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan, Invoice
 from .utils import categorize_created_items, perform_ocr, query_gpt_for_planning_analysis
+from .utils import categorize_transaction_items, perform_ocr, query_gpt_for_planning_analysis
+from rest_framework.views import APIView
 
 
 def list_tax_relief_cat(request):
@@ -57,6 +59,7 @@ def list_user_transactions(request):
 #         return JsonResponse({"message": "Transaction items categorization process started."}, status=200)
 #     else:
 #         return JsonResponse({"error": "Invalid request method."}, status=405)
+
 
 def get_transaction_items(request):
     transaction_items = TransactionItem.objects.all()
@@ -249,3 +252,24 @@ def analyse_user_plans(request):
         return JsonResponse({"message": "Items have been successfully extracted from invoices.", "response": response}, status=200)
     except Exception as e:
         return JsonResponse({"error": f"Enountered error. {e=}"}, status=500)
+
+
+class UploadPDFView(APIView):
+    def post(self, request):
+        try:
+            file_path = request.data.get('file_path')
+            user_transaction_id = int(request.data.get('user_transaction_id'))
+
+            user_transaction = UserTransaction.objects.filter(transaction_id=user_transaction_id).first()
+
+            Invoice.objects.create(
+                file_path=file_path,
+                user_transaction=user_transaction,
+                is_e_invoice=True,
+            )
+            return JsonResponse({"success": True}, status=200)
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": e}, status=400)
+
+
