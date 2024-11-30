@@ -44,7 +44,6 @@ def list_user_transactions(request):
             'transaction_remarks': transaction.transaction_remarks,
             'amount_including_tax': str(transaction.amount_including_tax),
             'transaction_type': transaction.transaction_type,  # Assuming transaction_type is a field in UserTransaction
-            'tax_relief_subcategory': transaction.tax_relief_subcategory.category if transaction.tax_relief_subcategory else None  # If subcategory exists, include it
         })
 
     # Return the data as JSON
@@ -61,25 +60,34 @@ def analyze_item(request):
     else:
         return JsonResponse({"error": "Invalid request method."}, status=405)
 
-
 def get_transaction_items(request):
     transaction_items = TransactionItem.objects.all()
 
     transaction_items_data = []
     for item in transaction_items:
+        # Check if the tax_relief_subcategory exists, and if it does, get the category display
+        tax_relief_category_display = (
+            item.tax_relief_subcategory.get_category_display() if item.tax_relief_subcategory else None
+        )
+
+        # Similarly, ensure related fields are accessed safely without select_related
+        invoice = item.invoice
+        user_transaction = invoice.user_transaction if invoice else None
+
         item_data = {
             "item_description": item.item_description,
             "amount_including_tax": str(item.amount_including_tax),
-            "tax_relief_subcategory": item.tax_relief_subcategory.category if item.tax_relief_subcategory else None,
+            "tax_relief_subcategory": tax_relief_category_display,  # Use the display name
             "transaction": {
-                "transaction_id": item.invoice.user_transaction.transaction_id,
-                "transaction_date": item.invoice.user_transaction.date.strftime('%Y-%m-%d'),  # Format the date to string
+                "transaction_id": user_transaction.transaction_id if user_transaction else None,
+                "transaction_date": user_transaction.date.strftime('%Y-%m-%d') if user_transaction else None,  # Format the date to string if available
             }
         }
 
         transaction_items_data.append(item_data)
 
     return JsonResponse(transaction_items_data, safe=False)
+
 
 
 @csrf_exempt
