@@ -322,4 +322,6 @@ $RECYCLE.BIN/
 
 backend/myvenv/
 
+my_new_venv/
+
 # End of https://www.toptal.com/developers/gitignore/api/python,django,windows,macos
