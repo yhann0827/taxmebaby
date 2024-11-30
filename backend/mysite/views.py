@@ -243,24 +243,31 @@ def analyse_user_plans(request):
     except Exception as e:
         return JsonResponse({"error": f"Enountered error. {e=}"}, status=500)
 
+from django.core.files import File
+
+# Open the PDF file in binary mode
+
+
 
 class UploadPDFView(APIView):
     def post(self, request):
         try:
-            file_path = request.data.get('file_path')
             user_transaction_id = 1
-
             user_transaction = UserTransaction.objects.filter(transaction_id=user_transaction_id).first()
 
-            invoice = Invoice.objects.create(
-                file_path=file_path,
-                user_transaction=user_transaction,
-                is_e_invoice=True,
-            )
+            # file_path = request.data.get('file_path')
+            with open('Sports Direct Mock Invoice.pdf', 'rb') as pdf_file:
+                file_path = File(pdf_file)
 
-            invoice_id = invoice.id
-            file_path = invoice.file_path
-            perform_ocr(invoice_id, file_path)
+                invoice = Invoice.objects.create(
+                    file_path=file_path,
+                    user_transaction=user_transaction,
+                    is_e_invoice=True,
+                )
+
+            # invoice_id = invoice.id
+            # file_path = invoice.file_path
+            # perform_ocr(invoice_id, file_path)
 
             return JsonResponse({"success": True}, status=200)
 
