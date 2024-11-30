@@ -10,6 +10,7 @@ from .models import Invoice, TransactionItem, TaxReliefSubcategory, UserTransact
 
 load_dotenv()
 
+
 def identify_tax_relief_categories(items):
     openai.api_key = os.getenv("OPENAI_API_KEY")
     query = """Here is a list containing all Tax Relief catagories offered by the government:
@@ -28,13 +29,13 @@ def identify_tax_relief_categories(items):
             "Contribution to the Social Security Organization (SOCSO)",
             "Expenses on charging facilities for Electric Vehicles (EV) (not for business use)"
         ]
-        Based on the information above, go through the following list of items and highlight only the items that may fall into any of the Tax Relief category. 
+        Based on the information above, go through the following list of items and highlight only the items that may fall into any of the Tax Relief category.
         Only return the response in JSON where the keys are "item" which indicates the item names and "category" which indicates the Tax Relief category.
         Return only an empty JSON if no item is found to be relevant to any of the categories.
-    
+
     """
     query += str(items)
-            
+
     try:
         response = openai.chat.completions.create(
             model="gpt-4",
@@ -43,13 +44,14 @@ def identify_tax_relief_categories(items):
                 {"role": "user", "content": query},
             ]
         )
-        
+
         extracted_response = response.choices[0].message.content
         extracted_response_json = json.loads(extracted_response)
         return extracted_response_json
-    
+
     except Exception as e:
         return f"Error: {e}"
+
 
 def categorize_created_items(items):
     try:
@@ -76,6 +78,7 @@ def categorize_created_items(items):
 
     except Exception as e:
         print(f"Error during categorization: {e}")
+
 
 @transaction.atomic
 def perform_ocr(invoice_id, file_path):
@@ -161,4 +164,3 @@ def query_gpt_for_planning_analysis(query):
         return extracted_response
     except Exception as e:
         return f"Error: {e}"
-

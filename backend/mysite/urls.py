@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     path('tax-relief-categories/', views.list_tax_relief_cat, name='tax_relief_list'),
     path('user-transactions/', views.list_user_transactions, name='user_transaction_list'),
-    # path('analyze_item/', views.analyze_item, name='analyze_item'),
+    path('analyze_item/', views.analyze_item, name='analyze_item'),
     path('transaction-items/', views.get_transaction_items, name='get_transaction_items'),
     path('transactions/labeled/', views.list_labeled_transaction, name='list_labeled_transaction'),
     path('transactions/unlabeled/', views.list_unlabeled_transaction, name='list_unlabeled_transaction'),
