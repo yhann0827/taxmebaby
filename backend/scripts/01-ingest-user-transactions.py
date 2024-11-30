@@ -32,5 +32,5 @@ def run():
         )
 
 
-        if index % 100:
+        if index % 500 == 0:
             print(f"Processing row {index}...")
