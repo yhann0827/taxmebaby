@@ -4,8 +4,8 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan
-# from .utils import categorize_transaction_items
+from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan, EInvoice, UploadedInvoice
+from .utils import categorize_transaction_items, perform_ocr
 
 
 def list_tax_relief_cat(request):
@@ -55,7 +55,7 @@ def list_user_transactions(request):
 def analyze_item(request):
     if request.method == "POST":
         # Call the function to categorize transaction items
-        # categorize_transaction_items()
+        categorize_transaction_items()
         # Return a success response
         return JsonResponse({"message": "Transaction items categorization process started."}, status=200)
     else:
@@ -144,3 +144,36 @@ def get_plans(request):
 
     return JsonResponse(plans_data, safe=False)
 
+
+@csrf_exempt
+def extract_items_from_invoice(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        file_type = data.get('file_type')
+        file_id = data.get('file_id')
+
+        if file_type == "e_invoice":
+            file_path = EInvoice.objects.filter(id=file_id).first().file_path
+        elif file_type == "uploaded_invoice":
+            file_path = UploadedInvoice.objects.filter(id=file_id).first().file_path
+
+        response = perform_ocr(file_path)
+
+        # {
+        #     "message": "Items have been successfully extracted from invoices.",
+        #     "response": [
+        #         {
+        #             "item": "Bowling Ball",
+        #             "price_per_unit": "RM400.00",
+        #             "total_price": "RM400.00"
+        #         },
+        #         {
+        #             "item": "Red Cow Energy Drink",
+        #             "price_per_unit": "RM42.50",
+        #             "total_price": "RM85.00"
+        #         }
+        #     ]
+        # }
+        return JsonResponse({"message": "Items have been successfully extracted from invoices.", "response": response}, status=200)
+    else:
+        return JsonResponse({"error": "Invalid request method."}, status=405)
