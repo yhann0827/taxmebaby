@@ -66,6 +66,10 @@ class Invoice(models.Model):
 
 
 class TransactionItem(models.Model):
+    transaction = models.ForeignKey(
+        UserTransaction,  # Links to the UserTransaction model
+        on_delete=models.CASCADE,  # Delete TransactionItems if the related UserTransaction is deleted
+    )
     invoice = models.ForeignKey(
         Invoice,
         on_delete=models.CASCADE,
@@ -84,7 +88,7 @@ class Plan(models.Model):
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=50, choices=[(c[0], c[1]) for c in TAX_RELIEF_CATEGORY_CHOICES])
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateTimeField()
+    date = models.DateField()
 
     class Meta:
         ordering = ['-date']  # Orders plans by date, most recent first

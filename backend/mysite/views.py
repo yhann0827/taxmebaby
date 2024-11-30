@@ -167,9 +167,6 @@ def create_items_from_invoice(request):
 
 
 def list_labeled_transaction(request):
-    """
-    Fetch and return all transactions where `is_deductable` is True.
-    """
     labeled_transactions = UserTransaction.objects.filter(is_deductable=True)
     data = [
         {
@@ -188,9 +185,6 @@ def list_labeled_transaction(request):
 
 
 def list_unlabeled_transaction(request):
-    """
-    Fetch and return all transactions where `is_deductable` is False.
-    """
     unlabeled_transactions = UserTransaction.objects.filter(is_deductable=False)
     data = [
         {
@@ -206,6 +200,17 @@ def list_unlabeled_transaction(request):
         for transaction in unlabeled_transactions
     ]
     return JsonResponse({"unlabeled_transactions": data}, safe=False)
+
+def invoice_transaction_items(request, transaction_id):
+    try:
+        transaction = UserTransaction.objects.get(transaction_id=transaction_id)
+        items = TransactionItem.objects.filter(transaction=transaction).values(
+            "id", "item_description", "amount_including_tax", "tax_relief_subcategory__category"
+        )
+
+        return JsonResponse({"transaction_id": transaction_id, "items": list(items)}, safe=False)
+    except UserTransaction.DoesNotExist:
+        return JsonResponse({"error": "Transaction not found"}, status=404)
 
 
 def analyse_user_plans(request):
