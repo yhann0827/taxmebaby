@@ -72,6 +72,30 @@ def categorize_created_items(items):
             if category_name:
                 if category_name == "Additional lifestyle expenses for sports activities (including bowling ball)":
                     category_name = "lifestyle_sports"
+                elif category_name == "Lifestyle expenses (incl Luxury Items like smartphones, laptop, tablet etc.)":
+                    category_name = "lifestyle"
+                elif category_name == "Net deposit in Skim Simpanan Pendidikan Nasional (SSPN)":
+                    category_name = "sspn"
+                elif category_name == "Life insurance and EPF contributions":
+                    category_name = "life_insurance"
+                elif category_name == "Deferred Annuity and Private Retirement Scheme (PRS)":
+                    category_name = "prs"
+                elif category_name == "Medical treatment, special needs, and carer expenses for parents (Medical condition certified by a medical practitioner)":
+                    category_name = "medical_parent"
+                elif category_name == "Purchase of basic supporting equipment for disabled self, spouse, child, or parent":
+                    category_name = "disabled_equipment"
+                elif category_name == "Education fees (Self)":
+                    category_name = "education_fee"
+                elif category_name == "Medical expenses":
+                    category_name = "medical_parent"
+                elif category_name == "Expenses on medical and mental health examinations":
+                    category_name = "medical_self_family"
+                elif category_name == "Education and medical insurance":
+                    category_name = "education_medical_insurance"
+                elif category_name == "Contribution to the Social Security Organization (SOCSO)":
+                    category_name = "socso"
+                elif category_name == "Expenses on charging facilities for Electric Vehicles (EV) (not for business use)":
+                    category_name = "ev_charging"
 
                 subcategory = TaxReliefSubcategory.objects.filter(category=category_name).first()
                 if subcategory:
