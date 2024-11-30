@@ -34,14 +34,14 @@ class TaxReliefSubcategory(models.Model):
     def __str__(self):
         return f"{self.get_category_display()} - Current: RM {self.current_amount}, Max: RM {self.maximum_amount}"
 
-# User Transaction Model
+
 class UserTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ('credit', 'Credit'),
         ('debit', 'Debit'),
     ]
 
-    transaction_id = models.CharField(max_length=100, unique=True)
+    transaction_id = models.CharField(max_length=100, unique=True, primary_key=True)
     source = models.CharField(max_length=255)
     account = models.CharField(max_length=255, null=True, blank=True)
     date = models.DateField()
@@ -55,46 +55,33 @@ class UserTransaction(models.Model):
         return self.transaction_id
 
 
-# Transaction Item Model (formerly TransactionInvoice)
-class TransactionItem(models.Model):
-    e_invoice_reference_number = models.CharField(max_length=100, unique=True)
-    upload_document_reference_number = models.CharField(max_length=100, unique=True)
-    transaction = models.ForeignKey(UserTransaction, on_delete=models.CASCADE, related_name="transaction_items")
-    item_description = models.TextField()
-    amount_including_tax = models.DecimalField(max_digits=12, decimal_places=2)
-    
-    # Moved tax_relief_subcategory here
-    tax_relief_subcategory = models.ForeignKey('TaxReliefSubcategory', on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self):
-        return self.e_invoice_reference_number
-
-
-# E-Invoice Database
 class EInvoice(models.Model):
-    id = models.OneToOneField(
-        TransactionItem,
-        on_delete=models.CASCADE,
-        primary_key=True,
-        to_field="e_invoice_reference_number",
-        related_name="e_invoice"
-    )
     file_path = models.FileField(upload_to='e_invoices/')
 
-    def __str__(self):
-        return self.id.e_invoice_reference_number
+
+class UploadedInvoice(models.Model):
+    file_path = models.FileField(upload_to='uploaded_invoices/')
 
 
-# Document Database
-class Document(models.Model):
-    id = models.OneToOneField(
-        TransactionItem,
+class TransactionItem(models.Model):
+    e_invoice_reference_number = models.ForeignKey(
+        EInvoice,
         on_delete=models.CASCADE,
-        primary_key=True,
-        to_field="upload_document_reference_number",
-        related_name="document"
+        null=True, blank=True
     )
-    path = models.FileField(upload_to='documents/')
-
-    def __str__(self):
-        return self.id.upload_document_reference_number
+    upload_document_reference_number = models.ForeignKey(
+        UploadedInvoice,
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    transaction = models.ForeignKey(
+        UserTransaction,
+        on_delete=models.CASCADE
+    )
+    item_description = models.TextField()
+    amount_including_tax = models.DecimalField(max_digits=12, decimal_places=2)
+    tax_relief_subcategory = models.ForeignKey(
+        'TaxReliefSubcategory',
+        on_delete=models.SET_NULL,
+        null=True, blank=True
+    )
