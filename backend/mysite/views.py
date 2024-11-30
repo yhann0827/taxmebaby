@@ -1,7 +1,12 @@
+import json
+from datetime import datetime
+
 from django.http import JsonResponse
-from .models import TaxReliefSubcategory, UserTransaction, TransactionItem
-# from .utils import categorize_transaction_items 
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan
+# from .utils import categorize_transaction_items
+
 
 def list_tax_relief_cat(request):
     # Query all the TaxReliefSubcategory records
@@ -22,6 +27,7 @@ def list_tax_relief_cat(request):
 
     # Return the data as JSON
     return JsonResponse(data, safe=False)
+
 
 def list_user_transactions(request):
     # Query all the UserTransaction records
@@ -44,15 +50,17 @@ def list_user_transactions(request):
     # Return the data as JSON
     return JsonResponse(data, safe=False)
 
-# @csrf_exempt
-# def analyze_item(request):
-#     if request.method == "POST":
-#         # Call the function to categorize transaction items
-#         categorize_transaction_items()
-#         # Return a success response
-#         return JsonResponse({"message": "Transaction items categorization process started."}, status=200)
-#     else:
-#         return JsonResponse({"error": "Invalid request method."}, status=405)
+
+@csrf_exempt
+def analyze_item(request):
+    if request.method == "POST":
+        # Call the function to categorize transaction items
+        # categorize_transaction_items()
+        # Return a success response
+        return JsonResponse({"message": "Transaction items categorization process started."}, status=200)
+    else:
+        return JsonResponse({"error": "Invalid request method."}, status=405)
+
 
 def get_transaction_items(request):
     # Query to get all TransactionItems with related UserTransaction
@@ -77,3 +85,50 @@ def get_transaction_items(request):
 
     # Return the response as JSON
     return JsonResponse(transaction_items_data, safe=False)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_plans(request):
+    try:
+        # extract the required fields
+        data = json.loads(request.body)
+
+        title = data.get('title')
+        category = data.get('category')
+        price = data.get('price')
+        date = data.get('date')
+
+        if not all([title, category, price, date]):
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        # convert the date string to a datetime object
+        try:
+            parsed_date = datetime.strptime(date, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
+
+        # TODO: replace Item with Django model
+        item = Plan.objects.create(
+            title=title,
+            category=category,
+            price=price,
+            date=parsed_date
+        )
+
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'id': item.id,
+                'title': item.title,
+                'category': item.category,
+                'price': str(item.price),
+                'date': item.date.strftime('%Y-%m-%d')
+            }
+        }, status=201)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

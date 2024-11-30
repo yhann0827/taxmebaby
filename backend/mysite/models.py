@@ -1,26 +1,26 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-class TaxReliefSubcategory(models.Model):
-    CATEGORY_CHOICES = [
-        ('individual_dependents', 'Individual & Dependent Relatives'),
-        ('education_fee', 'Education Fee for Self'),
-        ('disabled_equipment', 'Equipment for Disabled Person'),
-        ('medical_self_family', 'Medical Expenses for Self, Spouse or Children'),
-        ('medical_parent', 'Medical Expenses for Parent'),
-        ('epf', 'EPF'),
-        ('socso', 'SOCSO'),
-        ('life_insurance', 'Life Insurance'),
-        ('education_medical_insurance', 'Education & Medical Insurance'),
-        ('prs', 'Private Retirement Scheme (PRS)'),
-        ('sspn', 'SSPN'),
-        ('lifestyle', 'Lifestyle (Reading Materials, Electronics, Internet, etc.)'),
-        ('lifestyle_sports', 'Lifestyle - Additional Relief for Sports Activity'),
-        ('ev_charging', 'Electric Vehicle Charging Facilities'),
-        ('donation_gift', 'Donation / Gift'),
-    ]
+TAX_RELIEF_CATEGORY_CHOICES = [
+    ('individual_dependents', 'Individual & Dependent Relatives'),
+    ('education_fee', 'Education Fee for Self'),
+    ('disabled_equipment', 'Equipment for Disabled Person'),
+    ('medical_self_family', 'Medical Expenses for Self, Spouse or Children'),
+    ('medical_parent', 'Medical Expenses for Parent'),
+    ('epf', 'EPF'),
+    ('socso', 'SOCSO'),
+    ('life_insurance', 'Life Insurance'),
+    ('education_medical_insurance', 'Education & Medical Insurance'),
+    ('prs', 'Private Retirement Scheme (PRS)'),
+    ('sspn', 'SSPN'),
+    ('lifestyle', 'Lifestyle (Reading Materials, Electronics, Internet, etc.)'),
+    ('lifestyle_sports', 'Lifestyle - Additional Relief for Sports Activity'),
+    ('ev_charging', 'Electric Vehicle Charging Facilities'),
+    ('donation_gift', 'Donation / Gift'),
+]
 
-    category = models.CharField(max_length=50, choices=[(c[0], c[1]) for c in CATEGORY_CHOICES], unique=True)
+class TaxReliefSubcategory(models.Model):
+    category = models.CharField(max_length=50, choices=[(c[0], c[1]) for c in TAX_RELIEF_CATEGORY_CHOICES], unique=True)
     current_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     maximum_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # New field to store the maximum amount
 
@@ -85,3 +85,16 @@ class TransactionItem(models.Model):
         on_delete=models.SET_NULL,
         null=True, blank=True
     )
+
+
+class Plan(models.Model):
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=50, choices=[(c[0], c[1]) for c in TAX_RELIEF_CATEGORY_CHOICES])
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-date']  # Orders plans by date, most recent first
+
+    def __str__(self):
+        return f"{self.title} - {self.price}"
