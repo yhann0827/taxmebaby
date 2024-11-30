@@ -248,7 +248,7 @@ class UploadPDFView(APIView):
     def post(self, request):
         try:
             file_path = request.data.get('file_path')
-            user_transaction_id = int(request.data.get('user_transaction_id'))
+            user_transaction_id = 1
 
             user_transaction = UserTransaction.objects.filter(transaction_id=user_transaction_id).first()
 
