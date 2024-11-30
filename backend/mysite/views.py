@@ -132,3 +132,21 @@ def create_plans(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+def get_plans(request):
+    plans = Plan.objects.all()
+
+    plans_data = []
+    for plan in plans:
+        plan_data = {
+            "title": plan.title,
+            "category": plan.category,
+            "price": plan.price,
+            "date": plan.date
+        }
+
+        plans_data.append(plan_data)
+
+    return JsonResponse(plans_data, safe=False)
+

@@ -6,5 +6,6 @@ urlpatterns = [
     path('user-transactions/', views.list_user_transactions, name='user_transaction_list'),
     # path('analyze_item/', views.analyze_item, name='analyze_item'),
     path('transaction-items/', views.get_transaction_items, name='get_transaction_items'),
+    path('plans/', views.get_plans, name='get_plans'),
     path('create-plan/', views.create_plans, name='create_plans'),
 ]
