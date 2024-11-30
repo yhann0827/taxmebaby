@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import TaxReliefSubcategory, UserTransaction, TransactionItem, Plan, Invoice
-from .utils import perform_ocr, query_gpt_for_planning_analysis, categorize_created_items
+from .utils import perform_ocr, query_gpt_for_planning_analysis
 from rest_framework.views import APIView
 
 
@@ -49,15 +49,6 @@ def list_user_transactions(request):
 
     # Return the data as JSON
     return JsonResponse(data, safe=False)
-
-@csrf_exempt
-def analyze_item(request):
-    if request.method == "POST":
-        categorize_created_items()
-        # Return a success response
-        return JsonResponse({"message": "Transaction items categorization process started."}, status=200)
-    else:
-        return JsonResponse({"error": "Invalid request method."}, status=405)
 
 
 def get_transaction_items(request):

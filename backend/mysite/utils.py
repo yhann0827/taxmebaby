@@ -30,7 +30,7 @@ def identify_tax_relief_categories(items):
             "Expenses on charging facilities for Electric Vehicles (EV) (not for business use)"
         ]
         Based on the information above, go through the following list of items and highlight only the items that may fall into any of the Tax Relief category.
-        Only return the response in JSON where the keys are "item" which indicates the item names and "category" which indicates the Tax Relief category.
+        Only return the response in a list of JSON objects, where the keys of each JSON object are "item" which indicates the item names and "category" which indicates the Tax Relief category.
         Return only an empty JSON if no item is found to be relevant to any of the categories.
 
     """
@@ -59,7 +59,9 @@ def categorize_created_items(items):
         descriptions = [desc["description"] for desc in item_descriptions]
 
         response = identify_tax_relief_categories(descriptions)
-        print(response)
+        print(f"{response=}")
+        # [{'item': 'Bowling Ball', 'category': 'Additional lifestyle expenses for sports activities (including bowling ball)'}]
+
         for item in items:
             category_name = None
             for entry in response:
@@ -125,9 +127,12 @@ def perform_ocr(invoice_id, file_path):
             item = item_details.get("item", "")
             total_price = float(item_details.get("total_price", "0.0"))
 
+            invoice = Invoice.objects.filter(id=invoice_id).first()
+            user_transaction = invoice.user_transaction
+
             created_item=TransactionItem.objects.create(
-                transaction = UserTransaction.objects.filter(transaction_id=invoice_id).order_by('-transaction_id').first(),
-                invoice = Invoice.objects.filter(id=invoice_id).first(),
+                transaction = user_transaction,
+                invoice = invoice,
                 item_description = item,
                 amount_including_tax = total_price,
             )
