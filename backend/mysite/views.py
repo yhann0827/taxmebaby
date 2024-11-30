@@ -252,11 +252,16 @@ class UploadPDFView(APIView):
 
             user_transaction = UserTransaction.objects.filter(transaction_id=user_transaction_id).first()
 
-            Invoice.objects.create(
+            invoice = Invoice.objects.create(
                 file_path=file_path,
                 user_transaction=user_transaction,
                 is_e_invoice=True,
             )
+
+            invoice_id = invoice.id
+            file_path = invoice.file_path
+            perform_ocr(invoice_id, file_path)
+
             return JsonResponse({"success": True}, status=200)
 
         except Exception as e:
