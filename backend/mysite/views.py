@@ -63,17 +63,13 @@ def analyze_item(request):
 
 
 def get_transaction_items(request):
-    # Query to get all TransactionItems with related UserTransaction
     transaction_items = TransactionItem.objects.select_related('transaction').all()
 
-    # Prepare the response data
     transaction_items_data = []
-
     for item in transaction_items:
-        # Serialize the data for each TransactionItem and its related UserTransaction
         item_data = {
             "item_description": item.item_description,
-            "amount_including_tax": str(item.amount_including_tax),  # Convert decimal to string for JSON
+            "amount_including_tax": str(item.amount_including_tax),
             "tax_relief_subcategory": item.tax_relief_subcategory.category if item.tax_relief_subcategory else None,
             "transaction": {
                 "transaction_id": item.transaction.transaction_id,
@@ -83,7 +79,6 @@ def get_transaction_items(request):
 
         transaction_items_data.append(item_data)
 
-    # Return the response as JSON
     return JsonResponse(transaction_items_data, safe=False)
 
 
@@ -108,7 +103,6 @@ def create_plans(request):
         except ValueError:
             return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
 
-        # TODO: replace Item with Django model
         item = Plan.objects.create(
             title=title,
             category=category,
