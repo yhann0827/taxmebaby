@@ -7,7 +7,8 @@ class TaxReliefSubcategoryAdmin(admin.ModelAdmin):
 
 @admin.register(UserTransaction)
 class UserTransactionAdmin(admin.ModelAdmin):
-    pass
+    search_fields =['transaction_id']
+
 
 
 @admin.register(TransactionItem)

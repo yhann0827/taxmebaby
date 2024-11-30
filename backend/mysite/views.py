@@ -1,5 +1,7 @@
 from django.http import JsonResponse
-from .models import TaxReliefSubcategory, UserTransaction
+from .models import TaxReliefSubcategory, UserTransaction, TransactionItem
+# from .utils import categorize_transaction_items 
+from django.views.decorators.csrf import csrf_exempt
 
 def list_tax_relief_cat(request):
     # Query all the TaxReliefSubcategory records
@@ -41,3 +43,37 @@ def list_user_transactions(request):
 
     # Return the data as JSON
     return JsonResponse(data, safe=False)
+
+# @csrf_exempt
+# def analyze_item(request):
+#     if request.method == "POST":
+#         # Call the function to categorize transaction items
+#         categorize_transaction_items()
+#         # Return a success response
+#         return JsonResponse({"message": "Transaction items categorization process started."}, status=200)
+#     else:
+#         return JsonResponse({"error": "Invalid request method."}, status=405)
+
+def get_transaction_items(request):
+    # Query to get all TransactionItems with related UserTransaction
+    transaction_items = TransactionItem.objects.select_related('transaction').all()
+
+    # Prepare the response data
+    transaction_items_data = []
+
+    for item in transaction_items:
+        # Serialize the data for each TransactionItem and its related UserTransaction
+        item_data = {
+            "item_description": item.item_description,
+            "amount_including_tax": str(item.amount_including_tax),  # Convert decimal to string for JSON
+            "tax_relief_subcategory": item.tax_relief_subcategory.category if item.tax_relief_subcategory else None,
+            "transaction": {
+                "transaction_id": item.transaction.transaction_id,
+                "transaction_date": item.transaction.date.strftime('%Y-%m-%d'),  # Format the date to string
+            }
+        }
+
+        transaction_items_data.append(item_data)
+
+    # Return the response as JSON
+    return JsonResponse(transaction_items_data, safe=False)
