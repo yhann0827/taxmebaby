@@ -215,7 +215,7 @@ def invoice_transaction_items(request, transaction_id):
     except UserTransaction.DoesNotExist:
         return JsonResponse({"error": "Transaction not found"}, status=404)
 
-
+@csrf_exempt
 def analyse_user_plans(request):
     try:
         tax_relief_subcategories = TaxReliefSubcategory.objects.filter(current_amount__gt=0)
