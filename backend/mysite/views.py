@@ -211,6 +211,7 @@ def list_unlabeled_transaction(request):
 def analyse_user_plans(request):
     try:
         tax_relief_subcategories = TaxReliefSubcategory.objects.filter(current_amount__gt=0)
+        tax_relief_subcategories = [subcat for subcat in tax_relief_subcategories if subcat.category not in ['individual_dependents', 'disabled_equipment', 'epf', 'socso', 'sspn', 'donation_gift']]
         plans = Plan.objects.all()
 
         query = """You are now a financial planner that specialises in tax. Your role is to help customers maximise the tax relief offered by the government in order for the customer to pay as least amount of tax as possible. The following information about the Malaysian tax relief as well as its maximum amount of claims are as follows:
